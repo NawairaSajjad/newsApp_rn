@@ -1,8 +1,5 @@
-
-import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { FlatList, Image, ListRenderItemInfo, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { useBookmarks } from '../context/BookmarkContext';
+import { FlatList, Image, Linking, ListRenderItemInfo, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface Source {
   id: string | null;
@@ -20,14 +17,13 @@ interface Article {
   content?: string;
 }
 
-const url = 'https://newsapi.org/v2/top-headlines?country=us&apiKey=ac34d2edf17f4dc2b202d4b0dfb29aad';
+const url = 'https://newsapi.org/v2/everything?q=cricket&apiKey=ac34d2edf17f4dc2b202d4b0dfb29aad';
 
-export default function HomeScreen() {
+export default function TabTwoScreen() {
   const [articles, setArticles] = useState<Article[]>([]);
-  const router = useRouter();
-  const { addBookmark } = useBookmarks();
-  
-   const fetchData = async () => {
+
+  useEffect(() => {
+    const fetchData = async () => {
       try {
         const result = await fetch(url);
         const json = await result.json();
@@ -37,67 +33,41 @@ export default function HomeScreen() {
       }
     };
 
-
-  useEffect(() => {
-   
     fetchData();
   }, []);
 
-  const handleBookmark = (article: Article) => {
-    addBookmark(article);
-  };
-
   const renderItem = ({ item }: ListRenderItemInfo<Article>) => (
-    <TouchableOpacity
-    onPress={() => router.push({ pathname: '/article/[url]', params: { url: item.url } })}
-
-      style={styles.articleContainer}
-    >
+    <TouchableOpacity onPress={() => Linking.openURL(item.url)} style={styles.articleContainer}>
       {item.urlToImage ? (
         <Image
           source={{ uri: item.urlToImage.startsWith('http') ? item.urlToImage : 'https:' + item.urlToImage }}
           style={styles.image}
         />
       ) : null}
-
       <View style={styles.textContainer}>
         <Text style={styles.title}>{item.title}</Text>
         <Text style={styles.source}>{item.source.name}</Text>
         <Text style={styles.date}>{new Date(item.publishedAt).toLocaleString()}</Text>
-
-        <TouchableOpacity onPress={() => handleBookmark(item)} style={styles.bookmarkButton}>
-          <Text style={{ color: 'gold' }}>★ Bookmark</Text>
-        </TouchableOpacity>
       </View>
     </TouchableOpacity>
   );
 
   return (
     <View style={{ flex: 1, paddingTop: 40 }}>
-      <Text style={{ fontWeight: 'bold', fontSize: 20, color: 'white', marginBottom: 20, marginLeft: 50 }}>
-        Breaking News!!
-      </Text>
-
+      <Text style ={ {fontWeight: 'bold',fontSize: 20,color:'white',marginBottom:5, marginLeft:50}}>Previous Updates</Text>
+      <Text style ={ {fontSize: 17,color:'white',marginBottom:15, marginLeft:50}}>Catch up on stories you may have missed!!</Text>
       <FlatList
         data={articles}
         keyExtractor={(item, index) => index.toString()}
         renderItem={renderItem}
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 20 }}
-        ListEmptyComponent={<Text style={{ color: 'white' }}>Loading news...</Text>}
+        ListEmptyComponent={<Text style = {{color:'white'}}>Loading news...</Text>}
       />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  bookmarkButton: {
-    marginTop: 8,
-    alignSelf: 'flex-start',
-    backgroundColor: '#333',
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 4,
-  },
   articleContainer: {
     flexDirection: 'row',
     marginBottom: 16,
